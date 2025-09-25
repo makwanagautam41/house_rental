@@ -12,7 +12,7 @@ $nav_items = [
 ];
 ?>
 
-<header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur-sm">
+<header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
     <div class="container mx-auto px-4">
         <div class="flex h-16 items-center justify-between">
             <!-- Logo -->
@@ -49,9 +49,23 @@ $nav_items = [
                     </svg>
                 </button>
                 <?php include 'theme_toggle.php'; ?>
-                <a href="login.php" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
-                    Sign In
-                </a>
+                <?php
+
+
+                if (isset($_SESSION['user_id'])) {
+                    echo '
+                    <a href="profile.php" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
+                        Profile
+                    </a>
+                    ';
+                } else {
+                    echo '
+                    <a href="login.php" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
+                        Sign In
+                    </a>
+                    ';
+                }
+                ?>
             </div>
 
             <!-- Mobile Menu Button -->
@@ -71,8 +85,8 @@ $nav_items = [
         </div>
     </div>
 
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+    <!-- Mobile Slide-in Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 left-0 z-40 w-80 transform -translate-x-full transition-transform duration-300 bg-white border-r border-gray-200 md:hidden shadow-lg">
         <nav class="flex flex-col gap-4 p-4">
             <?php foreach ($nav_items as $item) : ?>
                 <a href="<?php echo $item['path']; ?>" class="text-base font-medium <?php echo is_active($item['path']) ? 'text-gray-900' : 'text-gray-500'; ?> hover:text-gray-900">
@@ -94,9 +108,20 @@ $nav_items = [
     const menuIcon = document.getElementById('menu-icon');
     const closeIcon = document.getElementById('close-icon');
 
+    let menuOpen = false;
+
     mobileMenuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-        menuIcon.classList.toggle('hidden');
-        closeIcon.classList.toggle('hidden');
+        menuOpen = !menuOpen;
+        if (menuOpen) {
+            mobileMenu.classList.remove('-translate-x-full');
+            mobileMenu.classList.add('translate-x-0');
+            menuIcon.classList.add('hidden');
+            closeIcon.classList.remove('hidden');
+        } else {
+            mobileMenu.classList.add('-translate-x-full');
+            mobileMenu.classList.remove('translate-x-0');
+            menuIcon.classList.remove('hidden');
+            closeIcon.classList.add('hidden');
+        }
     });
 </script>

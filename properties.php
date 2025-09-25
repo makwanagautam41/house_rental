@@ -38,10 +38,10 @@
                 });
             }
             
-            if (!empty($_GET['property_type'])) {
-                $propertyType = $_GET['property_type'];
-                $filteredProperties = array_filter($filteredProperties, function ($p) use ($propertyType) {
-                    return strtolower($p['type']) === strtolower($propertyType);
+            if (!empty($_GET['property_type']) && is_array($_GET['property_type'])) {
+                $propertyTypes = array_map('strtolower', $_GET['property_type']);
+                $filteredProperties = array_filter($filteredProperties, function ($p) use ($propertyTypes) {
+                    return in_array(strtolower($p['type']), $propertyTypes);
                 });
             }
 
