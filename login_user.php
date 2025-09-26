@@ -6,21 +6,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    // Prepared statement for secure query
-    $stmt = $conn->prepare("SELECT id, fullname, email, password FROM user WHERE email = ?");
+    // Prepare statement
+    $stmt = $conn->prepare("SELECT userId, name, email, password FROM users WHERE email = ?");
+    if (!$stmt) die("Prepare failed: " . $conn->error);
+
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Check if user exists
     if ($result && $result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
-        // Check password
         if (password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_id'] = $user['userId'];
             $_SESSION['user_email'] = $user['email'];
-            $_SESSION['user_name'] = $user['fullname'];
+            $_SESSION['user_name'] = $user['name'];
             header("Location: dashboard.php");
             exit();
         } else {

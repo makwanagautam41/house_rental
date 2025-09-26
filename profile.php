@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 include "config.php";
 
 $userId = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT fullname, email FROM user WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, email FROM users WHERE userId = ?");
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -48,8 +48,8 @@ $user = $result->fetch_assoc();
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                    <p class="mt-1 text-gray-900"><?= htmlspecialchars($user['fullname']) ?></p>
+                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                    <p class="mt-1 text-gray-900"><?= htmlspecialchars($user['name']) ?></p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Email Address</label>

@@ -1,12 +1,11 @@
 <?php
-$servername = "localhost";
+$servername = "localhost";  // or "127.0.0.1"
 $username = "root";
-$password = "";
+$password = "mysql"; // set this to the password used in Workbench
 $database = "house_rental";
 
-$conn = mysqli_connect($servername, $username, $password, $database);
+$conn = new mysqli($servername, $username, $password, $database);
 
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
-?>

@@ -34,7 +34,7 @@
                     <?php unset($_SESSION['success']); ?>
                 <?php endif; ?>
 
-                <form action="register_user.php" method="POST" class="space-y-6">
+                <form action="register_user.php" method="POST" enctype="multipart/form-data" class="space-y-6">
                     <div>
                         <label for="fullname" class="text-sm font-medium text-gray-700">Full Name</label>
                         <input type="text" id="fullname" name="fullname" required
@@ -43,10 +43,23 @@
                     </div>
 
                     <div>
+                        <label for="phone" class="text-sm font-medium text-gray-700">Phone</label>
+                        <input type="text" id="phone" name="phone" required maxlength="10"
+                            class="mt-1 block w-full h-11 px-4 rounded-md border border-gray-300 focus:border-gray-900 transition-colors"
+                            placeholder="9876543210">
+                    </div>
+
+                    <div>
                         <label for="email" class="text-sm font-medium text-gray-700">Email Address</label>
                         <input type="email" id="email" name="email" required
                             class="mt-1 block w-full h-11 px-4 rounded-md border border-gray-300 focus:border-gray-900 transition-colors"
                             placeholder="you@example.com">
+                    </div>
+
+                    <div>
+                        <label for="avatar" class="text-sm font-medium text-gray-700">Avatar (optional)</label>
+                        <input type="file" id="avatar" name="avatar" accept="image/*"
+                            class="mt-1 block w-full h-11 px-4 rounded-md border border-gray-300 focus:border-gray-900 transition-colors">
                     </div>
 
                     <div>
@@ -70,6 +83,7 @@
                         </button>
                     </div>
                 </form>
+
 
                 <div class="text-center mt-6">
                     <p class="text-sm text-gray-600">
