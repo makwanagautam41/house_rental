@@ -35,6 +35,7 @@
                 <?php endif; ?>
 
                 <form action="login_user.php" method="POST" class="space-y-6">
+                    <input type="hidden" name="redirect" value="<?= isset($_GET['redirect']) ? htmlspecialchars($_GET['redirect']) : '' ?>">
                     <div>
                         <label for="email" class="text-sm font-medium text-gray-700">Email Address</label>
                         <input type="email" id="email" name="email" required

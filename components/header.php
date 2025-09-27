@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 function is_active($path)
 {
     return parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === $path;
@@ -7,8 +11,6 @@ function is_active($path)
 $nav_items = [
     ['label' => 'Home', 'path' => 'index.php'],
     ['label' => 'Properties', 'path' => 'properties.php'],
-    ['label' => 'About', 'path' => 'about.php'],
-    ['label' => 'Contact', 'path' => 'contact.php'],
 ];
 ?>
 

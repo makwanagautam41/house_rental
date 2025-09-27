@@ -9,10 +9,22 @@
     <a href="property.php?id=<?php echo htmlspecialchars($property['id']); ?>" class="block aspect-[4/3] overflow-hidden">
       <img src="<?php echo htmlspecialchars($property['images'][0]); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
     </a>
-    <div class="absolute top-3 left-3">
+    <div class="absolute top-3 left-3 flex flex-col gap-2">
         <span class="inline-block bg-gray-900/75 text-white text-xs font-semibold px-3 py-1 rounded-full">
           <?php echo htmlspecialchars($property['type']); ?>
         </span>
+        <?php
+        // Check if property has active rental agreement
+        if (isset($property['rental_status'])) {
+          if ($property['rental_status'] === 'rented') {
+            echo '<span class="inline-block bg-red-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full">Rented</span>';
+          } elseif ($property['rental_status'] === 'pending') {
+            echo '<span class="inline-block bg-yellow-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full">Application Pending</span>';
+          } else {
+            echo '<span class="inline-block bg-green-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full">Available</span>';
+          }
+        }
+        ?>
     </div>
     <!-- Favorite Icon -->
     <button class="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition">

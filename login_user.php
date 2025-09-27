@@ -6,6 +6,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
+    // Get redirect value (fallback to dashboard.php)
+    $redirect = isset($_POST['redirect']) && !empty($_POST['redirect']) ? $_POST['redirect'] : "dashboard.php";
+
+    // 🔒 Security: Prevent external redirects (only allow local files)
+    $redirect = basename($redirect);
+
     // Prepare statement
     $stmt = $conn->prepare("SELECT userId, name, email, password FROM users WHERE email = ?");
     if (!$stmt) die("Prepare failed: " . $conn->error);
@@ -21,18 +27,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $user['userId'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_name'] = $user['name'];
-            header("Location: dashboard.php");
+
+            // ✅ Redirect to requested page
+            header("Location: " . $redirect);
             exit();
         } else {
             $_SESSION['error'] = "Incorrect password.";
-            header("Location: login.php");
-            exit();
         }
     } else {
         $_SESSION['error'] = "User not found.";
-        header("Location: login.php");
-        exit();
     }
+
+    // ❌ On error, keep redirect parameter
+    header("Location: login.php" . (!empty($redirect) ? "?redirect=" . urlencode($redirect) : ""));
+    exit();
 } else {
     $_SESSION['error'] = "Invalid request.";
     header("Location: login.php");

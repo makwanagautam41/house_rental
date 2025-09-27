@@ -44,6 +44,7 @@ session_start();
       $propertyId = $_GET['id'] ?? null;
       $property = null;
       $isOwner = false;
+      $isRented = false;
       $currentUserId = $_SESSION['userId'] ?? $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
       $isLoggedIn = $currentUserId !== null;
 
@@ -61,6 +62,21 @@ session_start();
         if ($result->num_rows > 0) {
           $property = $result->fetch_assoc();
           $isOwner = $isLoggedIn && (string)$currentUserId === (string)$property['owner_id'];
+
+          // Check if property is currently rented based on rental_agreements table
+          $rentalCheckStmt = $conn->prepare("
+            SELECT COUNT(*) as active_rentals 
+            FROM rental_agreements 
+            WHERE property_id = ? 
+            AND status = 'active' 
+            AND start_date <= CURDATE() 
+            AND (end_date IS NULL OR end_date >= CURDATE())
+          ");
+          $rentalCheckStmt->bind_param("i", $propertyId);
+          $rentalCheckStmt->execute();
+          $rentalResult = $rentalCheckStmt->get_result();
+          $rentalData = $rentalResult->fetch_assoc();
+          $isRented = $rentalData['active_rentals'] > 0;
 
           // Property images
           $stmt = $conn->prepare("SELECT image_url FROM property_images WHERE property_id = ?");
@@ -102,9 +118,20 @@ session_start();
           <div class="lg:col-span-2 space-y-8">
             <!-- Header -->
             <div>
-              <span class="inline-block bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full mb-2">
-                <?php echo htmlspecialchars($property['type']); ?>
-              </span>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="inline-block bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full">
+                  <?php echo htmlspecialchars($property['type']); ?>
+                </span>
+                <?php if ($isRented): ?>
+                  <span class="inline-block bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full">
+                    🏠 RENTED
+                  </span>
+                <?php else: ?>
+                  <span class="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                    ✅ AVAILABLE
+                  </span>
+                <?php endif; ?>
+              </div>
               <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
                 <?php echo htmlspecialchars($property['title']); ?>
               </h1>
@@ -121,6 +148,23 @@ session_start();
                 <div class="flex items-center gap-2">📏 <?php echo htmlspecialchars($property['area']); ?> sq ft</div>
               </div>
             </div>
+
+            <!-- Rental Status Alert -->
+            <?php if ($isRented): ?>
+              <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+                <div class="flex items-center gap-3">
+                  <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-semibold text-red-800">Property Currently Rented</h3>
+                    <p class="text-red-700">This property is not available for new rental applications or visits at this time. Please check back later or browse other available properties.</p>
+                  </div>
+                </div>
+              </div>
+            <?php endif; ?>
 
             <!-- Description -->
             <section class="bg-white p-6 rounded-xl shadow border">
@@ -160,7 +204,7 @@ session_start();
                 <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
                   <p class="text-blue-800 text-sm font-medium">✅ This is your property listing</p>
                 </div>
-              <?php elseif ($isLoggedIn): ?>
+              <?php elseif ($isLoggedIn && !$isRented): ?>
                 <div class="space-y-2">
                   <?php if (!empty($property['owner_phone'])): ?>
                     <a href="tel:<?php echo htmlspecialchars($property['owner_phone']); ?>" class="w-full flex items-center justify-center py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm transition-colors">
@@ -170,6 +214,10 @@ session_start();
                   <a href="mailto:<?php echo htmlspecialchars($property['owner_email']); ?>?subject=Inquiry about <?php echo urlencode($property['title']); ?>" class="w-full flex items-center justify-center py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm transition-colors">
                     ✉️ Send Message
                   </a>
+                </div>
+              <?php elseif ($isRented): ?>
+                <div class="bg-gray-50 border border-gray-200 rounded-md p-4">
+                  <p class="text-gray-700 text-sm">Property is currently rented. Contact information not available.</p>
                 </div>
               <?php else: ?>
                 <div class="bg-gray-50 border border-gray-200 rounded-md p-4">
@@ -197,13 +245,39 @@ session_start();
                 </div>
 
                 <?php if ($isOwner): ?>
-                  <div class="bg-gray-100 p-4 rounded-md text-center">
+                  <div class="bg-blue-50 border border-blue-200 p-4 rounded-md text-center">
                     <p class="text-gray-700 mb-3">✅ This is your property listing</p>
-                    <a href="edit_property.php?id=<?php echo $propertyId; ?>" class="inline-block w-full px-4 py-3 bg-gray-900 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors">
+                    <a href="edit_property.php?id=<?php echo $propertyId; ?>" class="inline-block w-full px-4 py-3 bg-gray-900 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors mb-2">
                       Edit Property
+                    </a>
+                    <a href="manage_applications.php?property_id=<?php echo $propertyId; ?>" class="inline-block w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors mb-2">
+                      Manage Rental Applications
+                    </a>
+                    <?php if ($isRented): ?>
+                      <a href="manage_rentals.php?property_id=<?php echo $propertyId; ?>" class="inline-block w-full px-4 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">
+                        Manage Current Rental
+                      </a>
+                    <?php endif; ?>
+                  </div>
+                <?php elseif ($isRented): ?>
+                  <!-- Property is rented - show unavailable message -->
+                  <div class="bg-red-50 border border-red-200 p-4 rounded-md text-center">
+                    <div class="flex items-center justify-center mb-3">
+                      <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                      </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-red-800 mb-2">Property Not Available</h3>
+                    <p class="text-red-700 text-sm mb-4">This property is currently rented and not accepting new applications or visit requests.</p>
+                    <a href="properties.php" class="inline-block w-full px-4 py-3 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors">
+                      Browse Other Properties
                     </a>
                   </div>
                 <?php elseif ($isLoggedIn): ?>
+                  <!-- Property is available for logged-in users -->
+                  <a href="apply_rental.php?property_id=<?php echo $propertyId; ?>" class="block w-full px-4 py-3 bg-blue-600 text-white text-center font-semibold rounded-md hover:bg-blue-700 transition-colors mb-2">
+                    Apply for Rental
+                  </a>
                   <form action="schedule_visit.php" method="POST" class="space-y-4">
                     <input type="hidden" name="property_id" value="<?php echo $propertyId; ?>">
                     <div>
@@ -232,12 +306,15 @@ session_start();
                     </button>
                   </form>
                 <?php else: ?>
+                  <!-- Not logged in -->
                   <div class="bg-gray-100 p-4 rounded-md text-center">
-                    <p class="text-gray-700 mb-3">Please log in to schedule a visit</p>
-                    <a href="login.php" class="inline-block w-full px-4 py-3 bg-gray-900 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors">
+                    <p class="text-gray-700 mb-3">Please log in to apply for rental or schedule a visit</p>
+                    <a href="login.php?redirect=property.php?id=<?php echo $propertyId; ?>"
+                      class="inline-block w-full px-4 py-3 bg-gray-900 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors">
                       Log In to Continue
                     </a>
                   </div>
+
                 <?php endif; ?>
               </div>
 
@@ -248,6 +325,12 @@ session_start();
                   <div class="flex justify-between">
                     <span class="text-gray-600">Property Type</span>
                     <span class="font-medium"><?php echo htmlspecialchars($property['type'] ?? 'N/A'); ?></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Status</span>
+                    <span class="font-medium <?php echo $isRented ? 'text-red-600' : 'text-green-600'; ?>">
+                      <?php echo $isRented ? 'Rented' : 'Available'; ?>
+                    </span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-600">Furnishing</span>
@@ -267,6 +350,53 @@ session_start();
                   </div>
                 </div>
               </div>
+
+              <!-- Current Rental Info (if rented and owner) -->
+              <?php if ($isRented && $isOwner): ?>
+                <div class="bg-orange-50 border border-orange-200 p-4 rounded-xl">
+                  <h3 class="text-lg font-semibold mb-3 text-orange-800">Current Rental Status</h3>
+                  <?php
+                  // Get current rental details
+                  $currentRentalStmt = $conn->prepare("
+                    SELECT ra.*, u.name as tenant_name, u.email as tenant_email, u.phone as tenant_phone
+                    FROM rental_agreements ra
+                    JOIN users u ON ra.tenant_id = u.userId
+                    WHERE ra.property_id = ? 
+                    AND ra.status = 'active' 
+                    AND ra.start_date <= CURDATE() 
+                    AND (ra.end_date IS NULL OR ra.end_date >= CURDATE())
+                    ORDER BY ra.start_date DESC
+                    LIMIT 1
+                  ");
+                  $currentRentalStmt->bind_param("i", $propertyId);
+                  $currentRentalStmt->execute();
+                  $currentRental = $currentRentalStmt->get_result()->fetch_assoc();
+
+                  if ($currentRental):
+                  ?>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">Tenant:</span>
+                        <span class="font-medium"><?php echo htmlspecialchars($currentRental['tenant_name']); ?></span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">Start Date:</span>
+                        <span class="font-medium"><?php echo date('M j, Y', strtotime($currentRental['start_date'])); ?></span>
+                      </div>
+                      <?php if ($currentRental['end_date']): ?>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">End Date:</span>
+                          <span class="font-medium"><?php echo date('M j, Y', strtotime($currentRental['end_date'])); ?></span>
+                        </div>
+                      <?php endif; ?>
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">Monthly Rent:</span>
+                        <span class="font-medium">$<?php echo number_format($currentRental['monthly_rent']); ?></span>
+                      </div>
+                    </div>
+                  <?php endif; ?>
+                </div>
+              <?php endif; ?>
             </div>
           </aside>
         </div>
