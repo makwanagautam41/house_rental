@@ -254,7 +254,7 @@ session_start();
                       Manage Rental Applications
                     </a>
                     <?php if ($isRented): ?>
-                      <a href="manage_rentals.php?property_id=<?php echo $propertyId; ?>" class="inline-block w-full px-4 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">
+                <a href="manage_rental.php?property_id=<?php echo $propertyId; ?>" class="inline-block w-full px-4 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">
                         Manage Current Rental
                       </a>
                     <?php endif; ?>

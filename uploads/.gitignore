@@ -1,0 +1,5 @@
+# Ignore everything inside uploads
+*
+
+# But keep this .gitignore file so the folder exists in Git
+!.gitignore

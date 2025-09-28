@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             // Update property
             $stmt = $conn->prepare("UPDATE properties SET title = ?, address = ?, city = ?, state = ?, price = ?, bedrooms = ?, bathrooms = ?, area = ?, type = ?, furnishing = ?, description = ?, featured = ? WHERE id = ?");
-            $stmt->bind_param("ssssdiiisssi", $title, $address, $city, $state, $price, $bedrooms, $bathrooms, $area, $type, $furnishing, $description, $featured, $property_id);
+            $stmt->bind_param("ssssdiiisssii", $title, $address, $city, $state, $price, $bedrooms, $bathrooms, $area, $type, $furnishing, $description, $featured, $property_id);
             $stmt->execute();
             
             // Handle image uploads

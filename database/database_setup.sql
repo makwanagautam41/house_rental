@@ -15,6 +15,8 @@ SELECT * FROM property_amenities;
 SELECT * FROM amenities;
 SELECT * FROM property_images;
 SELECT * FROM testimonials;
+select * from rental_payments;
+select * from rental_agreements;
 
 ALTER TABLE users
 MODIFY COLUMN userId INT AUTO_INCREMENT PRIMARY KEY;
@@ -121,5 +123,3 @@ CREATE TABLE rental_payments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (agreement_id) REFERENCES rental_agreements(id) ON DELETE CASCADE
 );
-
-select * from rental_agreements;

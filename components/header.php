@@ -31,10 +31,18 @@ $nav_items = [
             <!-- Desktop Navigation -->
             <nav class="hidden md:flex items-center gap-6">
                 <?php foreach ($nav_items as $item) : ?>
-                    <a href="<?php echo $item['path']; ?>" class="text-sm font-medium transition-colors hover:text-gray-900 <?php echo is_active($item['path']) ? 'text-gray-900' : 'text-gray-500'; ?>">
+                    <a href="<?php echo $item['path']; ?>"
+                        class="text-sm font-medium transition-colors hover:text-gray-900 <?php echo is_active($item['path']) ? 'text-gray-900' : 'text-gray-500'; ?>">
                         <?php echo $item['label']; ?>
                     </a>
                 <?php endforeach; ?>
+
+                <?php if (isset($_SESSION['user_id'])) : ?>
+                    <a href="dashboard.php"
+                        class="text-sm font-medium transition-colors hover:text-gray-900 <?php echo is_active('dashboard.php') ? 'text-gray-900' : 'text-gray-500'; ?>">
+                        Dashboard
+                    </a>
+                <?php endif; ?>
             </nav>
 
             <!-- Desktop Actions -->
@@ -51,23 +59,15 @@ $nav_items = [
                     </svg>
                 </button>
                 <?php include 'theme_toggle.php'; ?>
-                <?php
-
-
-                if (isset($_SESSION['user_id'])) {
-                    echo '
+                <?php if (isset($_SESSION['user_id'])): ?>
                     <a href="profile.php" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
                         Profile
                     </a>
-                    ';
-                } else {
-                    echo '
+                <?php else: ?>
                     <a href="login.php" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
                         Sign In
                     </a>
-                    ';
-                }
-                ?>
+                <?php endif; ?>
             </div>
 
             <!-- Mobile Menu Button -->
@@ -91,14 +91,29 @@ $nav_items = [
     <div id="mobile-menu" class="fixed inset-y-0 left-0 z-40 w-80 transform -translate-x-full transition-transform duration-300 bg-white border-r border-gray-200 md:hidden shadow-lg">
         <nav class="flex flex-col gap-4 p-4">
             <?php foreach ($nav_items as $item) : ?>
-                <a href="<?php echo $item['path']; ?>" class="text-base font-medium <?php echo is_active($item['path']) ? 'text-gray-900' : 'text-gray-500'; ?> hover:text-gray-900">
+                <a href="<?php echo $item['path']; ?>"
+                    class="text-base font-medium <?php echo is_active($item['path']) ? 'text-gray-900' : 'text-gray-500'; ?> hover:text-gray-900">
                     <?php echo $item['label']; ?>
                 </a>
             <?php endforeach; ?>
-            <div class="border-t border-gray-200 pt-4">
-                <a href="login.php" class="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
-                    Sign In
+
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="dashboard.php"
+                    class="text-base font-medium <?php echo is_active('dashboard.php') ? 'text-gray-900' : 'text-gray-500'; ?> hover:text-gray-900">
+                    Dashboard
                 </a>
+            <?php endif; ?>
+
+            <div class="border-t border-gray-200 pt-4">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="profile.php" class="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
+                        Profile
+                    </a>
+                <?php else: ?>
+                    <a href="login.php" class="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 h-10 px-4">
+                        Sign In
+                    </a>
+                <?php endif; ?>
             </div>
         </nav>
     </div>
@@ -126,4 +141,4 @@ $nav_items = [
             closeIcon.classList.add('hidden');
         }
     });
-</script>
+</script>   
