@@ -17,6 +17,7 @@ SELECT * FROM property_images;
 SELECT * FROM testimonials;
 select * from rental_payments;
 select * from rental_agreements;
+select * from rental_applications;
 
 ALTER TABLE users
 MODIFY COLUMN userId INT AUTO_INCREMENT PRIMARY KEY;
