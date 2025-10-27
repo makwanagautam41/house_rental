@@ -106,7 +106,7 @@ if (isset($_SESSION['emailId'])) {
     echo "
     const emailId = '$emailId';
     const statusBox = document.createElement('div');
-    statusBox.className = 'mt-6 p-4 text-sm bg-blue-50 text-blue-800 rounded-lg border border-blue-200';
+    statusBox.className = 'mt-6 p-4 text-sm bg-blue-50 text-blue-800 rounded-lg border border-blue-200'; 
     statusBox.textContent = '📬 Welcome email queued... waiting for updates.';
     document.querySelector('main').appendChild(statusBox);
 
