@@ -97,5 +97,48 @@
 
     <?php include 'components/footer.php'; ?>
 </body>
+<script>
+<?php
+// If email was queued, connect to Node SSE endpoint
+if (isset($_SESSION['emailId'])) {
+    $emailId = $_SESSION['emailId'];
+    unset($_SESSION['emailId']); // clear it after use
+    echo "
+    const emailId = '$emailId';
+    const statusBox = document.createElement('div');
+    statusBox.className = 'mt-6 p-4 text-sm bg-blue-50 text-blue-800 rounded-lg border border-blue-200';
+    statusBox.textContent = '📬 Welcome email queued... waiting for updates.';
+    document.querySelector('main').appendChild(statusBox);
+
+    const evtSource = new EventSource('https://smtp-service-server.vercel.app/api/email/events/$emailId');
+
+    evtSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('📡 Email update:', data);x
+
+        if (data.status === 'sending') {
+            statusBox.textContent = '🕐 Sending your welcome email...';
+        } else if (data.status === 'sent') {
+            statusBox.textContent = '✅ Welcome email sent successfully!';
+            statusBox.classList.remove('bg-blue-50', 'text-blue-800');
+            statusBox.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
+            evtSource.close();
+        } else if (data.status === 'failed') {
+            statusBox.textContent = '❌ Failed to send welcome email: ' + (data.error || 'Unknown error');
+            statusBox.classList.remove('bg-blue-50', 'text-blue-800');
+            statusBox.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+            evtSource.close();
+        }
+    };
+
+    evtSource.onerror = () => {
+        statusBox.textContent = '⚠️ Connection lost. Please refresh to check email status.';
+        evtSource.close();
+    };
+    ";
+}
+?>
+</script>
+
 
 </html>

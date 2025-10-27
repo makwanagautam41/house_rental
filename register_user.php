@@ -51,8 +51,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $insert->bind_param("sssss", $fullname, $email, $hashedPassword, $phone, $avatarPath);
 
     if ($insert->execute()) {
-        $_SESSION['success'] = "Registration successful! Please login.";
-        header("Location: login.php");
+        // ✅ Send welcome email using Node.js SMTP service
+        $apiUrl = "https://smtp-service-server.vercel.app/api/email/send";
+        $apiKey = "b27ed2452e19defad91535d864ad0630735afd42f6b5c068819e648b21b441c5"; // your key
+
+        $postData = [
+            "to" => $email,
+            "subject" => "🎉 Welcome to HomeHaven!",
+            "html" => "<h2>Hello, $fullname!</h2><p>Welcome to <b>HomeHaven</b>! We're thrilled to have you with us.</p>"
+        ];
+
+        $ch = curl_init($apiUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/json",
+                "x-api-key: $apiKey"
+            ],
+            CURLOPT_POSTFIELDS => json_encode($postData),
+            CURLOPT_RETURNTRANSFER => true
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $emailData = json_decode($response, true);
+
+        if ($httpCode === 201 || $httpCode === 200) {
+            $_SESSION['success'] = "Registration successful! Welcome email queued.";
+            $_SESSION['emailId'] = $emailData['id'] ?? null;
+        } else {
+            $_SESSION['error'] = "User registered, but failed to queue welcome email.";
+        }
+
+        header("Location: register.php"); 
         exit();
     } else {
         $_SESSION['error'] = "Something went wrong: " . $insert->error;
@@ -60,3 +93,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 }
+?>
